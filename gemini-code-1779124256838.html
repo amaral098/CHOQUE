@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionário - Polícia Militar do Estado de São Paulo</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #020617;
+            background-image:
+                linear-gradient(180deg, rgba(2, 15, 43, 0.95), rgba(4, 26, 65, 0.96) 40%, rgba(8, 40, 84, 0.98)),
+                radial-gradient(circle at 20% 8%, rgba(14, 165, 233, 0.16), transparent 14%),
+                radial-gradient(circle at 82% 12%, rgba(56, 189, 248, 0.12), transparent 13%);
+            color: #e2e8f0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.00) 30%, rgba(255,255,255,0.02) 100%),
+                url('https://i.ibb.co/FLcbDVFq/imagem-2026-05-18-142509069.png') center/27% no-repeat;
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: -1;
+        }
+        body::after {
+            content: '2º BP CHOQUE ANCHIETA';
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9rem;
+            color: rgba(255,255,255,0.03);
+            letter-spacing: 1.5rem;
+            text-transform: uppercase;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .pdf-container {
+            font-family: 'Arial', sans-serif;
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            background-color: white;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .pdf-border {
+            border: 2px solid black;
+            height: 100%;
+            padding: 20px;
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.12;
+            width: 75%;
+            height: auto;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .pdf-content {
+            position: relative;
+            z-index: 10;
+        }
+        table, th, td {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+        .signature-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+            margin: 0 auto;
+            width: 260px;
+        }
+        .signature-img {
+            max-height: 65px;
+            width: auto;
+            margin-bottom: -15px;
+            z-index: 15;
+        }
+        .logo-wrapper img {
+            max-height: 100px;
+            width: auto;
+            filter: drop-shadow(0 18px 30px rgba(15, 23, 42, 0.45));
+        }
+        .police-banner {
+            background: linear-gradient(135deg, rgba(2,54,97,0.96), rgba(15,23,42,0.98));
+            border: 1px solid rgba(56,189,248,0.22);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+        }
+        .police-banner h1 {
+            color: #f8fafc;
+            text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28);
+        }
+        .police-banner p {
+            color: #93c5fd;
+        }
+        .question-block {
+            background: rgba(15,23,42,0.88);
+            border: 1px solid rgba(56,189,248,0.20);
+            border-radius: 1rem;
+            padding: 1.1rem 1.15rem;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02), 0 16px 35px rgba(15,23,42,0.12);
+        }
+        .question-block p {
+            color: #f8fafc !important;
+        }
+        .question-block label {
+            color: #e2e8f0;
+        }
+        .question-block .space-y-2 label {
+            display: block;
+            background: rgba(15,23,42,0.55);
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 0.9rem;
+            padding: 0.8rem 0.95rem;
+            transition: background 0.2s ease, transform 0.2s ease;
+            margin-bottom: 0.55rem;
+            cursor: pointer;
+        }
+        .question-block .space-y-2 label:hover {
+            background: rgba(56,189,248,0.12);
+            transform: translateX(1px);
+        }
+        .question-block input[type="radio"] {
+            accent-color: #38bdf8;
+        }
+        input[type="text"] {
+            background: rgba(15,23,42,0.85);
+            color: #e2e8f0;
+            border-color: rgba(71,85,105,0.90);
+        }
+        input[type="text"]::placeholder {
+            color: #94a3b8;
+        }
+        .action-button {
+            background: linear-gradient(90deg, #0ea5e9, #0284c7);
+            border: 1px solid #38bdf8;
+            box-shadow: 0 16px 30px rgba(2, 68, 128, 0.25);
+        }
+        .action-button:hover {
+            background: linear-gradient(90deg, #38bdf8, #0c4a6e);
+        }
+        .page-subtitle {
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="min-h-screen px-4 py-8 md:px-10 md:py-12 relative">
+
+    <div class="max-w-4xl mx-auto police-banner mb-10 relative z-30" id="form-interface">
+        <div class="flex justify-center mb-4 logo-wrapper">
+            <img src="https://i.ibb.co/27NJFgxw/imagem-2026-05-18-151051874-removebg-preview.png" alt="Logo do Questionário" class="object-contain">
+        </div>
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center gap-3 mb-3">
+                <span class="inline-block rounded-full bg-slate-900/80 px-4 py-2 text-[0.75rem] uppercase tracking-[0.35em] text-sky-200 shadow-sm">Polícia Militar do Estado de São Paulo</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Questionário Operacional</h1>
+            <p class="page-subtitle text-sm md:text-base uppercase tracking-[0.2em]">2º Batalhão de Choque - Anchieta</p>
+            <p class="text-slate-300 text-sm md:text-base mt-2">Avaliação interna de conhecimento e conduta</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-slate-200">Nome do Militar:</label>
+                <input type="text" id="input-nome" placeholder="Ex: Lucas Amaral" class="mt-1 block w-full p-2 border border-slate-600 rounded shadow-sm focus:ring-sky-400 focus:border-sky-400 bg-slate-900 text-slate-100">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-200">Patente:</label>
+                <input type="text" id="input-patente" placeholder="Ex: Soldado PM" class="mt-1 block w-full p-2 border border-slate-600 rounded shadow-sm focus:ring-sky-400 focus:border-sky-400 bg-slate-900 text-slate-100">
+            </div>
+        </div>
+
+        <hr class="mb-6">
+
+        <h2 class="text-xl font-semibold text-slate-100 mb-4">Questões Teóricas</h2>
+        <div id="quiz-container" class="space-y-6">
+            
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-slate-100 mb-2">1. Qual princípio determina que a atuação policial utilize meios proporcionais à situação enfrentada, especialmente no uso da força?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q1" value="A" class="mr-2"> A) Princípio da Proporcionalidade e Razoabilidade</label>
+                    <label class="flex items-center"><input type="radio" name="q1" value="B" class="mr-2"> B) Princípio da Eficiência</label>
+                    <label class="flex items-center"><input type="radio" name="q1" value="C" class="mr-2"> C) Princípio da Impessoalidade</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">2. De quem é a responsabilidade de se inteirar de todas e quaisquer mudanças referentes ao procedimento operacional padrão (POP)?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q2" value="A" class="mr-2"> A) Exclusivamente da Prefeitura</label>
+                    <label class="flex items-center"><input type="radio" name="q2" value="B" class="mr-2"> B) Do próprio Policial Militar</label>
+                    <label class="flex items-center"><input type="radio" name="q2" value="C" class="mr-2"> C) Apenas da Corregedoria</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">3. O que a unidade de serviço deve fazer se houver um atropelamento ou colisão grave durante um acompanhamento (perseguição)?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q3" value="A" class="mr-2"> A) Continuar a perseguição até capturar o veículo e ignorar o acidente</label>
+                    <label class="flex items-center"><input type="radio" name="q3" value="B" class="mr-2"> B) Atirar nos pneus do fugitivo imediatamente</label>
+                    <label class="flex items-center"><input type="radio" name="q3" value="C" class="mr-2"> C) Cessar o acompanhamento, ajudar a vítima e solicitar a UR dos bombeiros</label>
+                </div>
+            </div>
+            
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">4. Qual modificação em viatura é estritamente PROIBIDA pelo regulamento?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q4" value="A" class="mr-2"> A) Uso de turbo e películas (insulfilm)</label>
+                    <label class="flex items-center"><input type="radio" name="q4" value="B" class="mr-2"> B) Modificação de freio</label>
+                    <label class="flex items-center"><input type="radio" name="q4" value="C" class="mr-2"> C) Modificação de motor e transmissão</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">5. A partir de qual patente é permitido o uso de bigode na corporação?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q5" value="A" class="mr-2"> A) Soldado 1ª Classe</label>
+                    <label class="flex items-center"><input type="radio" name="q5" value="B" class="mr-2"> B) Cabo</label>
+                    <label class="flex items-center"><input type="radio" name="q5" value="C" class="mr-2"> C) Major</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">6. Quais são os pilares fundamentais que sustentam a estrutura organizacional da Polícia Militar da Elite Roleplay?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q6" value="A" class="mr-2"> A) Força, rapidez e armamento pesado</label>
+                    <label class="flex items-center"><input type="radio" name="q6" value="B" class="mr-2"> B) Impessoalidade, publicidade e trânsito livre</label>
+                    <label class="flex items-center"><input type="radio" name="q6" value="C" class="mr-2"> C) Hierarquia, disciplina e ética</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">7. Qual procedimento administrativo é conduzido pela Polícia Militar para apurar infrações penais militares?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q7" value="A" class="mr-2"> A) IPM - Inquérito Policial Militar</label>
+                    <label class="flex items-center"><input type="radio" name="q7" value="B" class="mr-2"> B) PAD - Procedimento Administrativo Disciplinar</label>
+                    <label class="flex items-center"><input type="radio" name="q7" value="C" class="mr-2"> C) Boletim de Ocorrência simplificado</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">8. Qual das alternativas abaixo constitui uma circunstância ATENUANTE de transgressão?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q8" value="A" class="mr-2"> A) Ter cometido o ato na presença de público</label>
+                    <label class="flex items-center"><input type="radio" name="q8" value="B" class="mr-2"> B) Bom comportamento</label>
+                    <label class="flex items-center"><input type="radio" name="q8" value="C" class="mr-2"> C) Prática simultânea de duas ou mais transgressões</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">9. Qual das alternativas abaixo é classificada como uma circunstância AGRAVANTE?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q9" value="A" class="mr-2"> A) Falta de prática do serviço</label>
+                    <label class="flex items-center"><input type="radio" name="q9" value="B" class="mr-2"> B) Evitar um mal maior</label>
+                    <label class="flex items-center"><input type="radio" name="q9" value="C" class="mr-2"> C) Cometer a transgressão com premeditação</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">10. Quais são as três sanções disciplinares aplicáveis em um PAD de acordo com o regulamento?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q10" value="A" class="mr-2"> A) Advertência, Multa em dinheiro e Prisão</label>
+                    <label class="flex items-center"><input type="radio" name="q10" value="B" class="mr-2"> B) Advertência, Suspensão e Exoneração</label>
+                    <label class="flex items-center"><input type="radio" name="q10" value="C" class="mr-2"> C) Orientação verbal, Perda de patente e Detenção</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">11. De acordo com a Seção II (Moral), qual conduta é expressamente proibida ao Policial Militar?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q11" value="A" class="mr-2"> A) Apropriar-se de objetos apreendidos e ilícitos encontrados</label>
+                    <label class="flex items-center"><input type="radio" name="q11" value="B" class="mr-2"> B) Utilizar relógio de pulso durante o serviço</label>
+                    <label class="flex items-center"><input type="radio" name="q11" value="C" class="mr-2"> C) Abordar suspeitos fora de comunidades</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">12. Sob quais condições o disparo de arma de fogo direcionado aos pneus de um veículo em fuga é permitido?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q12" value="A" class="mr-2"> A) Logo no início do acompanhamento tático para evitar a fuga</label>
+                    <label class="flex items-center"><input type="radio" name="q12" value="B" class="mr-2"> B) Sempre que o suspeito desobedecer à ordem de parada verbal</label>
+                    <label class="flex items-center"><input type="radio" name="q12" value="C" class="mr-2"> C) Quando o veículo capotar e continuar, ou em caso de atropelamento intencional a terceiros</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">13. O que é vedado ao policial militar quando ele se encontra fora de serviço?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q13" value="A" class="mr-2"> A) Permanecer na frequência de rádio do COPOM</label>
+                    <label class="flex items-center"><input type="radio" name="q13" value="B" class="mr-2"> B) Portar uma pistola Glock velada com até 80 munições</label>
+                    <label class="flex items-center"><input type="radio" name="q13" value="C" class="mr-2"> C) Portar um par de algemas</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">14. É dever do policial militar fora de serviço, ao presenciar um crime:</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q14" value="A" class="mr-2"> A) Efetuar a abordagem imediata e a prisão sozinho</label>
+                    <label class="flex items-center"><input type="radio" name="q14" value="B" class="mr-2"> B) Solicitar o apoio de uma viatura através do telefone 190</label>
+                    <label class="flex items-center"><input type="radio" name="q14" value="C" class="mr-2"> C) Ignorar o fato por não estar fardado</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">15. Para iniciar o patrulhamento em motocicletas (RPM), qual a condição mínima exigida em relação ao efetivo em serviço?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q15" value="A" class="mr-2"> A) Ter no mínimo 2 unidades de 4 rodas (viaturas) operando em serviço</label>
+                    <label class="flex items-center"><input type="radio" name="q15" value="B" class="mr-2"> B) Ter autorização expressa da Prefeitura via chat global</label>
+                    <label class="flex items-center"><input type="radio" name="q15" value="C" class="mr-2"> C) Estar acompanhado de um oficial na garupa da moto</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">16. Qual curso é obrigatório para que o militar possa realizar o Rádio Patrulhamento Motorizado (RPM)?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q16" value="A" class="mr-2"> A) Curso de Força Tática Avançado</label>
+                    <label class="flex items-center"><input type="radio" name="q16" value="B" class="mr-2"> B) Curso de Legislação de Trânsito apenas</label>
+                    <label class="flex items-center"><input type="radio" name="q16" value="C" class="mr-2"> C) Curso de SAT - A</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">17. Qual a ordem obrigatória para abertura de viaturas setoriais por companhias e setores?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q17" value="A" class="mr-2"> A) Devem ser abertas em ordem crescente pelos setores (Alpha, Bravo, Charlie...)</label>
+                    <label class="flex items-center"><input type="radio" name="q17" value="B" class="mr-2"> B) A abertura é totalmente aleatória e fica a critério do soldado</label>
+                    <label class="flex items-center"><input type="radio" name="q17" value="C" class="mr-2"> C) Devem abrir primeiro no interior da cidade e depois na capital</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">18. É permitido adentrar o sector de patrulhamento de outra viatura?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q18" value="A" class="mr-2"> A) Não, em nenhuma hipótese sob pena de punição administrativa</label>
+                    <label class="flex items-center"><input type="radio" name="q18" value="B" class="mr-2"> B) Sim, para prestar apoio em ocorrência, tornando obrigatório o retorno após o término</label>
+                    <label class="flex items-center"><input type="radio" name="q18" value="C" class="mr-2"> C) Sim, desde que a viatura permaneça no outro sector até o fim do plantão</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">19. Quais são os requisitos mínimos exigidos para realizar uma Blitz pela CPTran?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q19" value="A" class="mr-2"> A) Mínimo de 2 policiais e 1 viatura de quatro rodas</label>
+                    <label class="flex items-center"><input type="radio" name="q19" value="B" class="mr-2"> B) Apenas a presença de um Oficial de Comando Geral</label>
+                    <label class="flex items-center"><input type="radio" name="q19" value="C" class="mr-2"> C) Mínimo de 6 policiais da CPTran, sendo um Praça Graduado ou Oficial responsável</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">20. Quando o preenchimento do Boletim de Ocorrência (BOPM) deve ser executado?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q20" value="A" class="mr-2"> A) Obrigatoriamente antes de iniciar a perseguição policial</label>
+                    <label class="flex items-center"><input type="radio" name="q20" value="B" class="mr-2"> B) No deslocamento da viatura até a DP ou na própria DP com o custodiado em cela</label>
+                    <label class="flex items-center"><input type="radio" name="q20" value="C" class="mr-2"> C) Apenas no final do turno de serviço de forma acumulada</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">21. Em relação ao patrulhamento em comunidades, o que dita a norma operacional?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q21" value="A" class="mr-2"> A) Só é permitido mediante autorização e organização do Comandante da unidade</label>
+                    <label class="flex items-center"><input type="radio" name="q21" value="B" class="mr-2"> B) É livre para qualquer viatura setorial a qualquer momento</label>
+                    <label class="flex items-center"><input type="radio" name="q21" value="C" class="mr-2"> C) É terminantemente proibido mesmo em caso de apoio a outras equipes</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="B">
+                <p class="font-medium text-gray-800 mb-2">22. Quanto ao comprimento do cabelo para militares masculinos, qual a regra estipulada?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q22" value="A" class="mr-2"> A) Pode cobrir metade das orelhas se estiver bem penteado</label>
+                    <label class="flex items-center"><input type="radio" name="q22" value="B" class="mr-2"> B) Não pode cobrir as orelhas ou tocar a gola da camisa do uniforme</label>
+                    <label class="flex items-center"><input type="radio" name="q22" value="C" class="mr-2"> C) É livre desde que a coloração seja de tons chamativos</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">23. Quais os únicos acessórios pessoais permitidos para uso em serviço junto ao fardamento?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q23" value="A" class="mr-2"> A) Relógio de pulso, pulseiras de ouro e anéis</label>
+                    <label class="flex items-center"><input type="radio" name="q23" value="B" class="mr-2"> B) Alianças e correntes expostas no pescoço</label>
+                    <label class="flex items-center"><input type="radio" name="q23" value="C" class="mr-2"> C) Apenas o uso de relógio é permitido</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="A">
+                <p class="font-medium text-gray-800 mb-2">24. Qual o posicionamento regulamentar em relação a tatuagens na cabeça ou no rosto?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q24" value="A" class="mr-2"> A) É totalmente proibido possuir tatuagem em qualquer parte do rosto ou cabeça</label>
+                    <label class="flex items-center"><input type="radio" name="q24" value="B" class="mr-2"> B) São liberadas desde que não possuam símbolos de facções</label>
+                    <label class="flex items-center"><input type="radio" name="q24" value="C" class="mr-2"> C) São permitidas apenas para oficiais de alta patente</label>
+                </div>
+            </div>
+
+            <div class="question-block" data-correct="C">
+                <p class="font-medium text-gray-800 mb-2">25. Se um suspeito em fuga realizar manobras ou atitudes consideradas Anti-RP (que quebram as regras do jogo), o que a equipe deve fazer?</p>
+                <div class="space-y-2 pl-2">
+                    <label class="flex items-center"><input type="radio" name="q25" value="A" class="mr-2"> A) Responder na mesma moeda cometendo atos Anti-RP também</label>
+                    <label class="flex items-center"><input type="radio" name="q25" value="B" class="mr-2"> B) Deslogar do servidor ou abandonar o jogo na hora</label>
+                    <label class="flex items-center"><input type="radio" name="q25" value="C" class="mr-2"> C) A unidade não pode seguir a mesma linha; os policiais sempre seguem as regras de RP da cidade independente da atitude de terceiros</label>
+                </div>
+            </div>
+
+        </div>
+
+        <button onclick="calcularERenderizar()" class="mt-8 w-full action-button text-white font-bold py-3 px-4 rounded-lg transition duration-200 cursor-pointer text-lg shadow-md">
+            Gerar Edital de Avaliação (PDF)
+        </button>
+    </div>
+
+    <div id="pdf-wrapper" style="position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; z-index: 0;">
+        <div id="pdf-template" class="pdf-container">
+            <div class="pdf-border">
+                
+                <img src="https://i.ibb.co/FLcbDVFq/imagem-2026-05-18-142509069.png" class="watermark" alt="Brasão Batalhão Anchieta">
+                
+                <div class="pdf-content">
+                    <div class="text-center font-bold text-black uppercase tracking-wide leading-tight">
+                        <div class="text-xl">Polícia Militar</div>
+                        <div class="text-md">11° BPM/M – Rádio Patrulhamento</div>
+                        <div class="text-md">2º Batalhão de Choque – Anchieta</div>
+                    </div>
+                    
+                    <div class="border-t border-black my-2"></div>
+                    
+                    <div class="text-center font-bold text-black mb-2">
+                        <div class="text-2xl tracking-wider">EDITAL DE AVALIAÇÃO INTERNA</div>
+                        <div class="text-xs font-normal">Nº 1805/2026</div>
+                    </div>
+                    
+                    <p class="text-justify text-xs text-black leading-relaxed mb-4 font-normal" style="text-indent: 2.5em;">
+                        O Comando do 2º Batalhão de Choque - Anchieta, no uso de suas atribuições legais e regimentais, torna público o resultado da Avaliação de Conhecimento e Conduta Operacional, aplicada ao militar abaixo identificado, conforme normas internas e o Código de Conduta vigente.
+                    </p>
+                    
+                    <div class="font-bold text-xs mb-1 text-black">1. IDENTIFICAÇÃO DO MILITAR</div>
+                    <table class="w-full text-xs text-black mb-3">
+                        <tr>
+                            <td class="w-1/4 font-bold bg-gray-100 p-1">Nome:</td>
+                            <td class="p-1" id="pdf-nome">Nome do Militar</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold bg-gray-100 p-1">Patente:</td>
+                            <td class="p-1" id="pdf-patente">Patente</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold bg-gray-100 p-1">Data da Avaliação:</td>
+                            <td class="p-1" id="pdf-data">Data</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold bg-gray-100 p-1">Unidade:</td>
+                            <td class="p-1">Rádio Patrulhamento – 11º BPM/M</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="font-bold text-xs mb-1 text-black">2. DISPOSIÇÕES GERAIS</div>
+                    <p class="text-justify text-[11px] text-black leading-relaxed mb-3">
+                        A presente avaliação teve como objetivo verificar o nível de conhecimento do militar referente às normas internas, procedimentos operacionais padrão, conduta profissional, apresentação pessoal e demais diretrizes que regem a Polícia Militar do Estado da Elite Roleplay.
+                    </p>
+                    
+                    <div class="font-bold text-xs mb-1 text-black">3. CRITÉRIOS DE AVALIAÇÃO</div>
+                    <p class="text-justify text-[11px] text-black leading-relaxed mb-1">
+                        O militar foi submetido a um questionário teórico contendo <span id="pdf-total-q1" class="font-bold">25 (vinte e cinco)</span> questões objetivas.
+                    </p>
+                    <ul class="list-disc list-inside text-[11px] text-black space-y-0.5 mb-3 pl-2">
+                        <li>Considerado <span class="font-bold">APTO (APROVADO)</span>: mínimo de 70% de acertos (18 questões).</li>
+                        <li>Considerado <span class="font-bold">INAPTO (REPROVADO)</span>: abaixo de 70% de acertos.</li>
+                    </ul>
+                    
+                    <div class="font-bold text-xs mb-1 text-black">4. RESULTADO DA AVALIAÇÃO</div>
+                    <table class="w-full text-xs text-black mb-3">
+                        <tr>
+                            <td class="w-1/3 font-bold bg-gray-100 p-1">Pontuação Obtida:</td>
+                            <td class="p-1 font-bold text-center" id="pdf-pontuacao">0 / 25</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold bg-gray-100 p-1">Percentual de Acertos:</td>
+                            <td class="p-1 font-bold text-center" id="pdf-percentual">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold bg-gray-100 p-1">Resultado Final:</td>
+                            <td class="p-1 font-bold text-center tracking-wide text-sm" id="pdf-resultado">APROVADO</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="font-bold text-xs mb-1 text-black">5. PARECER OPERACIONAL</div>
+                    <p class="text-justify text-[11px] text-black leading-relaxed mb-3" id="pdf-parecer">
+                        Parecer...
+                    </p>
+                    
+                    <div class="font-bold text-xs mb-1 text-black">6. DISPOSIÇÃO FINAL</div>
+                    <p class="text-justify text-[11px] text-black leading-relaxed mb-4">
+                        Este documento possui caráter interno e fictício, destinado exclusivamente ao ambiente de simulação Roleplay, não possuindo validade legal fora deste contexto.
+                    </p>
+                </div>
+
+                <div>
+                    <div class="text-right text-xs text-black mb-6 font-medium">
+                        Anchieta, <span id="pdf-data-rodape">Data</span>.
+                    </div>
+                    
+                    <div class="signature-box text-center text-xs text-black font-bold leading-tight mb-2">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='70' viewBox='0 0 250 70'><text x='50%' y='55%' font-family='&quot;Courier New&quot;, Courier, monospace, cursive' font-size='30' font-style='italic' fill='%23000000' text-anchor='middle'>Luan Bigode</text><path d='M 30 46 Q 125 52 220 43' stroke='%23000000' stroke-width='1' fill='none' stroke-linecap='round'/></svg>" class="signature-img" alt="Assinatura Luan Bigode">
+                        
+                        <div class="w-64 border-t border-black mb-1"></div>
+                        <div>TENENTE CORONEL - COMANDANTE</div>
+                        <div class="font-normal text-[11px]">2º Batalhão de Choque Anchieta</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function obterDataAtualFormatada() {
+            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            const data = new Date();
+            return `${data.getDate()} de ${meses[data.getMonth()]} de ${data.getFullYear()}`;
+        }
+
+        document.getElementById('pdf-data').innerText = obterDataAtualFormatada();
+        document.getElementById('pdf-data-rodape').innerText = obterDataAtualFormatada();
+
+        function escribirNumeroPorExtenso(num) {
+            const numExtenso = ["zero", "uma", "duas", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte", "vinte e um", "vinte e duas", "vinte e três", "vinte e quatro", "vinte e cinco"];
+            return numExtenso[num] || num;
+        }
+
+        function calcularERenderizar() {
+            try {
+                const nome = document.getElementById('input-nome').value.trim() || "Militar Não Identificado";
+                const patente = document.getElementById('input-patente').value.trim() || "Soldado PM";
+
+                const blocosQuestoes = document.querySelectorAll('.question-block');
+                const totalQuestoes = blocosQuestoes.length;
+                let acertos = 0;
+
+                blocosQuestoes.forEach((bloco) => {
+                    const correta = bloco.getAttribute('data-correct');
+                    const selecionada = bloco.querySelector('input[type="radio"]:checked');
+                    
+                    if (selecionada && selecionada.value === correta) {
+                        acertos++;
+                    }
+                });
+
+                const percentual = (acertos / totalQuestoes) * 100;
+                const aprovado = percentual >= 70; 
+
+                document.getElementById('pdf-nome').innerText = nome;
+                document.getElementById('pdf-patente').innerText = patente;
+                document.getElementById('pdf-total-q1').innerText = `${totalQuestoes} (${escribirNumeroPorExtenso(totalQuestoes)})`;
+                document.getElementById('pdf-pontuacao').innerText = `${acertos} / ${totalQuestoes}`;
+                document.getElementById('pdf-percentual').innerText = `${percentual.toFixed(2)}%`;
+                
+                const elementoResultado = document.getElementById('pdf-resultado');
+                const elementoParecer = document.getElementById('pdf-parecer');
+
+                if (aprovado) {
+                    elementoResultado.innerText = "APROVADO";
+                    elementoResultado.style.color = "green";
+                    elementoParecer.innerHTML = `Com base no desempenho apresentado, o militar demonstrou conhecimento <strong>satisfatório</strong> das normas, disciplina e postura compatível com os preceitos da corporação, estando considerado <strong>APTO</strong> para fins de transferência e/ou permanência na unidade de Rádio Patrulhamento deste Batalhão.`;
+                } else {
+                    elementoResultado.innerText = "REPROVADO";
+                    elementoResultado.style.color = "red";
+                    elementoParecer.innerHTML = `Com base no desempenho apresentado, o militar <strong>não demonstrou</strong> conhecimento suficiente das diretrizes regulamentares da corporação, sendo considerado <strong>INAPTO</strong> para fins de permanência ou transferência e condicionado a novos exames de reciclagem técnica.`;
+                }
+
+                const element = document.getElementById('pdf-template');
+                
+                const opt = {
+                    margin:       0,
+                    filename:     `Edital_Avaliacao_${nome.replace(/\s+/g, '_')}.pdf`,
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { scale: 2, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().set(opt).from(element).save();
+
+            } catch (err) {
+                alert("Ocorreu um erro no processamento. Verifique a seleção das respostas.");
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>
